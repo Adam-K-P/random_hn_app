@@ -1,0 +1,98 @@
+#!/usr/bin/perl -w
+# Written by Adam Pinarbasi
+# Yeah, I'm 1337 as f4ck ;-)
+
+use strict;
+use warnings;
+use LWP::Simple;
+use Getopt::Std;
+
+my %opts;
+getopts "db", \%opts;
+my $nr_links;
+my $browser;
+
+my $url = "https://news.ycombinator.com";
+
+# url's of article and comment pages
+my %articles;
+my %comments;
+
+sub usage {
+   die "Usage: random_hn_app -b browser_executable [-d nr_links_to_display]\n";
+}
+
+sub execute_command {
+   my $command = shift;
+   print "Read in command: $command\n";
+}
+
+sub primary_loop {
+   while (1) {
+      my $input = <STDIN>;
+      chomp $input;
+      return if ($input =~ /quit/);
+      execute_command $input;
+   }
+}
+
+sub open_browser {
+   my $command = $browser . " " . $url;
+   system $command;
+}
+
+sub fetch_articles_comments {
+   # used to collect article url's
+   my $content = shift;
+   my $magic_regex = /<span class="deadmark"><\/span><a href="/;
+   my @articles = split $magic_regex, $content;
+
+   my $i = 0;
+   for my $article (@articles) {
+      unless ($i == 0 or $i == scalar @articles - 1) {
+      }
+   ++$i;
+   }
+}
+
+sub get_content {
+   my $content = get $url;
+   die "Could not retrieve content from $url" unless defined $content;
+   return $content;
+}
+
+sub handle_opts {
+   my $argv_leng = scalar @ARGV;
+   usage () if ($argv_leng < 1);
+
+   if ($opts{'d'}) {
+      if ($ARGV[0] =~ /[0-9]+/) { $nr_links = $ARGV[0]; }
+      else { 
+         usage () if ($argv_leng < 2 or not $ARGV[1] =~ /[0-9]+/); 
+         $nr_links = $ARGV[1];
+      }
+      $nr_links = $ARGV[0] if ($ARGV[0] =~ /[0-9]+/);
+   }
+
+   if ($opts{'b'}) {
+      if ($argv_leng == 1) { $browser = $ARGV[0]; }
+      else {
+         if ($ARGV[0] =~ /[0-9]+/) {
+            usage () if ($argv_leng < 2);
+            $browser = $ARGV[1];
+         }
+         else { $browser = $ARGV[0]; }
+      }
+   }
+}
+
+sub main {
+   handle_opts ();
+   my $content = get_content ();
+   #print $content;
+   fetch_articles_comments $content;
+   #open_browser (); 
+   primary_loop ();
+}
+
+main ()
